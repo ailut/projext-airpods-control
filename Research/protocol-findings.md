@@ -74,3 +74,72 @@ Do not flash or modify AirPods firmware. Avoid pairing secrets, device identifie
 ## Next implementation task
 
 Create a macOS event logger that timestamps observable media events while the operator executes the trial matrix. Do not begin a full iPhone volume controller until the event-identity feasibility gate is met.
+
+---
+
+## Experiment log — 2026-11-13
+
+### Equipment and setup
+
+- AirPods (3rd generation) connected wirelessly to MacBook Air M4; charging case was initially connected via Lightning.
+- AirPods firmware shown by macOS: `6F21` (as observed in Terminal screenshot).
+- `system_profiler SPBluetoothDataType` confirmed Bluetooth connectivity and independent left/right battery readings.
+- `ioreg -r -c IOHIDDevice -l | grep -i -C 5 "AirPods"` produced no matches; this does **not** rule out connected AAP or other events.
+- PacketLogger initially showed zero records, then live logging became operational. For captures, the requested settings were **All Devices**, **All Handles**, **All Packet Types**, with no search restriction. PacketLogger has an **AAP Receive** view, but the full captures were requested unfiltered.
+
+### Files recorded locally (not committed)
+
+- Exploratory: `left_stem_hold_1.pklg`, `right_stem_hold_1.pklg`.
+- Controlled: `baseline.pklg`, `left_stem_hold_2.pklg`, `right_stem_hold_2.pklg`.
+
+The controlled trials used a planned timeline: 0–2 s untouched, 2–5 s stem held, 5–7 s untouched; baseline approximately 10 s. Human-operated timing is approximate, not instrumented ground truth.
+
+### Preliminary analysis reported during the session
+
+| Capture | Reported packet records | Reported incoming ACL packets |
+|---|---:|---:|
+| Baseline | 958 | 0 |
+| Left hold (controlled) | 1,209 | 253 |
+| Right hold (controlled) | 965 | 189 |
+
+Preliminary examination reported a shared incoming sequence in *both* controlled hold recordings:
+
+```text
+1B 10 00 01 00 01 01 02
+```
+
+Reported first occurrence relative to recording start: left ~4.48 seconds; right ~3.55 seconds; not observed in the baseline.
+
+**Critical caveat:** These are exploratory observations from the session, not a decoded AAP gesture specification or replicated proof of event identity. Packet offsets, channel framing, and payload interpretation remain unverified. Differences in total traffic may be caused by connection state, sampling conditions, or Siri's microphone/audio stream.
+
+**User-confirmed observation:** Siri activated when *either* stem was held. Therefore a stronger competing hypothesis is that the shared sequence and incoming traffic are Siri/audio-session related, **not** left/right stem identifiers.
+
+### Next experiment: Siri-only control (priority 1)
+
+1. Keep both AirPods connected as Mac audio output/input.
+2. Set PacketLogger to All Devices / All Handles / All Packet Types; start a fresh capture.
+3. Leave stems untouched for about 2 seconds.
+4. Activate Siri through a Mac UI/keyboard shortcut — **do not touch the AirPods**.
+5. Let Siri stay open silently for ~3 seconds; dismiss it and capture ~2 seconds more.
+6. Stop and save privately as `siri_mac_control.pklg`.
+7. Log how Siri was invoked, approximate timestamps, whether the microphone was engaged, and any audible/UI behavior.
+
+**Analysis:** Compare the candidate sequence and subsequent incoming burst to stem-triggered Siri traces. Matching traffic supports the Siri/session hypothesis; mismatching traffic merely identifies another candidate requiring replication, not proof of a stem identifier.
+
+### Next experiment: double-press controls (priority 2)
+
+Capture baseline + left/right double-press trials separately, ideally five repetitions, while a local audio player is able to accept track commands. Note whether the track changes. Compare decoded host events and connected AAP messages for a differentiable earbud-source field. Track navigation may map to the same host command regardless of side.
+
+### Evidence needed to advance
+
+1. A repeatable event tightly correlated with stem press rather than Siri activation.
+2. A stable and independently validated left/right distinction (not inferred from battery fields).
+3. Separate press-start and release indicators with appropriate timing.
+4. A supported route to receive these events on a non-jailbroken iPhone while Brave runs.
+5. A supported method to adjust iPhone output volume while another app has foreground audio.
+
+No iOS app integration should be presented as viable until gates 4 and 5 are tested. `MPVolumeView` is a user-facing volume interface; it is not evidence of a general public API to automatically set system volume in the background.
+
+### Capture security
+
+Keep raw packet captures out of the public repository: they may include Bluetooth addresses, traffic metadata, or pairing-related information. Commit only sanitized summaries and non-sensitive pseudocode or test fixtures.
