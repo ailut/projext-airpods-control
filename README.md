@@ -11,9 +11,9 @@ Research and development project exploring custom stem gestures for Apple AirPod
 
 This functionality is **not implemented or proven feasible**. In particular, macOS/iOS may not expose earbud identity, hold-start/release messages, or the iOS background volume control we need.
 
-## Status — 13 November 2026
+## Development Phases
 
-**Phase: Bluetooth capture and hypothesis testing**
+### Phase 1 — Bluetooth capture and initial diagnostics (completed)
 
 Completed:
 - [x] Created this GitHub repository and documented protocol hypotheses.
@@ -25,6 +25,8 @@ Completed:
 - [x] Observed Siri activate from either stem during long presses.
 - [x] Identified a **candidate shared packet sequence** in preliminary analysis; its meaning and origin are unverified.
 
+### Phase 2 — Isolate and identify stem events (in progress)
+
 Not yet established:
 - [ ] A reproducible *stem-specific* packet distinct from Siri/audio activity.
 - [ ] Independent identification of left vs right stem.
@@ -32,7 +34,7 @@ Not yet established:
 - [ ] Non-jailbroken iOS access while Brave is in the foreground.
 - [ ] Programmatic background system-volume changes on iPhone.
 
-## Immediate next experiment
+### Next experiment for Phase 2
 
 **Siri-only control:** capture a Mac-triggered Siri invocation without touching either AirPod. Compare with both stem-triggered Siri recordings to determine whether the shared packet sequence is just Siri/microphone setup.
 
@@ -40,14 +42,19 @@ Then perform left/right **double-press** captures to isolate track-control event
 
 Detailed procedures, preliminary findings, uncertainties and milestone gates: [Research/protocol-findings.md](Research/protocol-findings.md).
 
-## Roadmap
+### Phase 3 — Gesture lifecycle and Mac prototype (pending)
 
-1. **Signal attribution:** differentiate Siri/audio-session traffic from actual stem commands.
-2. **Earbud identity:** determine if left/right origin survives to a host-visible message.
-3. **Press lifecycle:** detect hold start and release with usable latency.
-4. **Mac proof of concept:** safely simulate and, if possible, map confirmed gestures to volume.
-5. **iOS feasibility gate:** validate documented APIs and background behavior on a physical, non-jailbroken iPhone while Brave plays music.
-6. **Product integration:** build a SwiftUI app only if the iOS gates can be met, or narrow scope to a Mac utility.
+- Establish reliable left/right identification and hold-start/hold-release detection.
+- Build a safe simulated Swift volume controller and integrate real events only if available.
+
+### Phase 4 — iPhone feasibility (pending)
+
+- Test supported iOS API access, background behavior, and system-volume restrictions while Brave plays audio.
+- Do not assume a Mac-based gesture detector will work on iOS.
+
+### Phase 5 — App integration and validation (pending)
+
+- Build the SwiftUI experience only after the iPhone feasibility gates pass, or document a Mac-only fallback.
 
 ## Research references
 
