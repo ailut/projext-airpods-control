@@ -2,6 +2,24 @@
 
 Research and development project exploring custom stem gestures for Apple AirPods (3rd generation) on macOS and iOS.
 
+## Research philosophy — macOS first
+
+**Goal:** Add custom volume behavior to third-generation AirPods using their existing stem inputs: hold left to lower macOS output volume, hold right to raise it, and stop immediately when released. This is exploratory interoperability and hardware-capability research, not a claim of official Apple support.
+
+**Platform restrictions are hypotheses to investigate, not a stopping criterion.** We will explore technically feasible alternatives, including protocol reverse engineering, diagnostic capture interfaces, lower-level macOS services and carefully isolated experimental implementations. We will distinguish Apple's documented/public APIs from actual hardware or operating-system behavior and validate findings on the specific AirPods 3 + MacBook setup.
+
+### Engineering method
+
+1. Favor reproducible event-level evidence with controls and timestamps over aggregate log counts or inferred behaviors.
+2. Investigate unsupported and undocumented interfaces when warranted, with an explicit assessment of compatibility, privileges, and maintenance cost.
+3. Keep experiments reversible: isolate risky changes, retain backups, avoid unnecessary interference with active audio, and document rollback steps before altering system services or pairing state.
+4. Do not conflate offline PacketLogger visibility with permission to subscribe to the live connection; test that question directly.
+5. Do not infer left/right **hold-start** or **hold-release** from a post-gesture correlation until proven.
+6. Keep a macOS-first focus; defer iOS feasibility until the Mac prototype works.
+7. Record negative findings too, but use them to select the next experiment rather than asserting impossibility without evidence.
+
+**Current blocker:** low-latency live stem-origin and hold-state observability while the AirPods are playing audio. The output-volume actuator and offline candidate classifier are working independently; no live stem-to-volume link is implemented yet.
+
 ## Target behavior
 
 - **Hold left stem:** continuously decrease volume.
