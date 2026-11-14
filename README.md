@@ -57,6 +57,22 @@ Detailed procedures, preliminary findings, uncertainties and milestone gates: [R
 - Build the SwiftUI experience only after the iPhone feasibility gates pass, or document a Mac-only fallback.
 
 
+## Live macOS Bluetooth diagnostic (non-disruptive)
+
+A read-only live-log comparison is available in `Tools/bluetooth-live-log-probe.sh`. It listens to **macOS unified logs from `bluetoothd`**, not directly to the Bluetooth packets visible in PacketLogger. It never opens a new Bluetooth channel, disconnects AirPods, or requests elevated permissions.
+
+```bash
+cd ~/Developer/projext-airpods-control
+git pull
+bash Tools/bluetooth-live-log-probe.sh
+```
+
+Follow the interactive prompts for four 6-second windows: music-only baseline, left stem, right stem, and Mac physical media key. The tool prints only total `bluetoothd` log-line counts and aggregate lines containing potentially relevant keywords (AAP, gesture, AVRCP, etc.). It does **not** print any raw log line, device address or serial number. Raw logs are temporarily kept in a private local directory and removed at exit.
+
+**Interpretation:** A line-count difference can result from unrelated Bluetooth activity. It does not prove that a stem gesture is exposed or identify earbud side. If no lines appear, the operating system may simply redact/suppress useful `bluetoothd` logging. A Mac-specific system logging profile may be needed for deeper diagnostics, but this tool does not install one. Do not upload raw `bluetoothd` logs to GitHub or post them publicly without inspecting for identifiers.
+
+**Feasibility caveat:** This is one observational experiment, not a working live AAP listener or an AirPods-stem-to-volume implementation. Reconnection-based L2CAP/AAP experiments are deliberately excluded because they interrupt audio and can disturb the active system connection. The external [airpods-ctl research](https://github.com/BorgoGustavo/airpods-ctl) investigated that limitation on AirPods Pro 2; our hardware is AirPods 3.
+
 ## macOS-first validation (current)
 
 The offline classifier matched 21 of 21 recorded physical gestures and 0 of 4 no-stem controls. Six Swift tests passed on the user's Mac. These results are **correlational**; there is no verified hold-start or hold-release notification, and neither AppKit nor a Quartz event tap saw AirPods stem presses (Quartz did receive Mac physical media keys).
