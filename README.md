@@ -73,6 +73,26 @@ Follow the interactive prompts for four 6-second windows: music-only baseline, l
 
 **Feasibility caveat:** This is one observational experiment, not a working live AAP listener or an AirPods-stem-to-volume implementation. Reconnection-based L2CAP/AAP experiments are deliberately excluded because they interrupt audio and can disturb the active system connection. The external [airpods-ctl research](https://github.com/BorgoGustavo/airpods-ctl) investigated that limitation on AirPods Pro 2; our hardware is AirPods 3.
 
+### Bluetooth log repeatability experiment
+
+The first six-second `bluetoothd` log experiment returned:
+- baseline: 1,078 total / 19 keyword lines
+- left: 2,385 total / 41 keyword lines
+- right: 373 total / 18 keyword lines
+- Mac keyboard: 732 total / 32 keyword lines
+
+These raw counts do **not** demonstrate a decoded AirPods stem event. Bluetooth logging changes substantially even without stem activity; normalizing keyword lines by total gives no uniquely identifying left-stem signature.
+
+To check repeatability while counterbalancing order and surrounding each press with no-press windows:
+
+```bash
+cd ~/Developer/projext-airpods-control
+git pull
+bash Tools/bluetooth-repeatability-probe.sh
+```
+
+The read-only script collects three left and three right trials, with six intervening baseline windows, displays only aggregates, and removes raw temporary logs. This is a **noise / feasibility diagnostic**, not a live gesture listener. Do not connect these aggregate counts to volume changes or infer hold-start/release.
+
 ## macOS-first validation (current)
 
 The offline classifier matched 21 of 21 recorded physical gestures and 0 of 4 no-stem controls. Six Swift tests passed on the user's Mac. These results are **correlational**; there is no verified hold-start or hold-release notification, and neither AppKit nor a Quartz event tap saw AirPods stem presses (Quartz did receive Mac physical media keys).
