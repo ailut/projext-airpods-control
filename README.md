@@ -93,6 +93,16 @@ bash Tools/bluetooth-repeatability-probe.sh
 
 The read-only script collects three left and three right trials, with six intervening baseline windows, displays only aggregates, and removes raw temporary logs. This is a **noise / feasibility diagnostic**, not a live gesture listener. Do not connect these aggregate counts to volume changes or infer hold-start/release.
 
+### Result: repeatability check — do not use aggregate logs as gesture input
+
+Three six-second left-press windows: total lines `1205, 733, 916` (mean `951.3`), keyword lines `49, 37, 50` (mean `45.3`). Three right-press windows: total lines `814, 765, 1021` (mean `866.7`), keyword lines `32, 38, 129` (mean `66.3`). Six no-press windows: total lines `195, 1092, 1114, 649, 673, 1342` (mean `844.2`), keyword lines `13, 25, 117, 24, 20, 28` (mean `37.8`).
+
+The distributions overlap and keyword counts are highly variable even during no-press controls. **Decision:** stop interpreting aggregate `bluetoothd` unified-log line counts as an AirPods gesture input. Existing script stays in `Tools` as a negative/limitation experiment. Do not connect it to the volume actuator.
+
+**macOS-first remaining gate:** establish a supported, repeatable, low-latency, **event-level** live source that differentiates physical left/right hold onset and release while macOS audio remains connected. `PacketLogger` exports prove offline correlation, not ordinary Swift access to the owned Bluetooth channel. Public `IOBluetooth` SDP status and `log stream` aggregate counts do not meet the gate. If a viable event-level source is not found, label the exact AirPods 3 remapping unsupported on stock macOS instead of suggesting that repeated log counts or a forced reconnect provides a solution.
+
+External relevant research: [airpods-ctl](https://github.com/BorgoGustavo/airpods-ctl) observed that steady-state second AAP channels are denied by macOS for AirPods Pro 2, while connecting in the reconnect window can interrupt audio. These findings are not proof of identical AirPods 3 behavior and do not provide an input-monitor API. [LibrePods protocol notes](https://github.com/librepods-org/librepods/blob/main/docs/AAP%20Definitions.md) cover proprietary AAP configuration messages, not a verified AirPods 3 macOS press/hold stream.
+
 ## macOS-first validation (current)
 
 The offline classifier matched 21 of 21 recorded physical gestures and 0 of 4 no-stem controls. Six Swift tests passed on the user's Mac. These results are **correlational**; there is no verified hold-start or hold-release notification, and neither AppKit nor a Quartz event tap saw AirPods stem presses (Quartz did receive Mac physical media keys).
