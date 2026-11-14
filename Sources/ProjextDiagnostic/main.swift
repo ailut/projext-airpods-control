@@ -11,6 +11,7 @@ func usage() {
       swift run projext-diagnostic simulate left [seconds]
       swift run projext-diagnostic simulate right [seconds]
       swift run projext-diagnostic monitor
+      swift run projext-diagnostic monitor-cg
 
     'simulate' prints signed volume steps (dry run; does NOT change volume).
     'monitor' watches macOS system-defined media-key events, if exposed.
@@ -75,5 +76,6 @@ case "simulate":
         simulate(side, seconds: seconds)
     } else { usage() }
 case "monitor": monitor()
+case "monitor-cg": monitorCoreGraphics()
 default: usage()
 }
