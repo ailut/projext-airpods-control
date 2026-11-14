@@ -56,6 +56,43 @@ Detailed procedures, preliminary findings, uncertainties and milestone gates: [R
 
 - Build the SwiftUI experience only after the iPhone feasibility gates pass, or document a Mac-only fallback.
 
+
+## Phase 3 prototype — Swift diagnostic utility
+
+The repository now contains a Swift Package with a small transport-independent gesture engine, unit tests, and a **macOS media-event monitor**. This is a feasibility prototype, **not** an AirPods Bluetooth parser or finished volume-control app.
+
+### Setup and test on a Mac
+
+```bash
+git clone https://github.com/ailut/projext-airpods-control.git
+cd projext-airpods-control
+swift test
+swift run projext-diagnostic simulate left 2
+swift run projext-diagnostic simulate right 2
+```
+
+The two simulation commands print signed volume steps only; **they do not change the Mac's volume**.
+
+To look for macOS-delivered media-key events:
+
+```bash
+swift run projext-diagnostic monitor
+```
+
+With both AirPods connected, try one single press, one double press and a hold. Then use the keyboard play/pause and next-track buttons as controls. Stop with **Ctrl+C**. The output intentionally reports `side=UNKNOWN` because macOS media-key events do not guarantee an earbud source.
+
+If no events appear, check whether macOS requests Input Monitoring or Accessibility permission for the Terminal application, and retry after granting only what is necessary. **An empty log does not rule out proprietary Bluetooth events**; PacketLogger can receive traffic that an ordinary Swift program cannot.
+
+### Build verification
+
+The Swift Package and the three gesture-state unit tests were built/tested in a Linux Swift environment. **Native macOS AppKit monitor compilation and real AirPods integration remain unverified until run on a Mac.**
+
+### Immediate evidence gate
+
+Compare whether `monitor` prints media-key events for the keyboard versus the AirPods stems. If both are absent or the stems alone are absent, stop and investigate permissible macOS interfaces; do not assume PacketLogger packets can be consumed directly by this program.
+
+No raw Bluetooth files or personal device identifiers are needed in the repository.
+
 ## Research references
 
 - [AirPods BLE battery research](https://github.com/stuffz/airpods/blob/main/docs/ble-research.md)
