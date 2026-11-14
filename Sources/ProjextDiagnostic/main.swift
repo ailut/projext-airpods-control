@@ -13,10 +13,14 @@ func usage() {
       swift run projext-diagnostic monitor
       swift run projext-diagnostic monitor-cg
       swift run projext-diagnostic analyze <path-to-pklg>
+      swift run projext-diagnostic bluetooth-inspect
+      swift run projext-diagnostic volume-step up|down [steps]
 
     'simulate' prints signed volume steps (dry run; does NOT change volume).
     'monitor' watches macOS system-defined media-key events, if exposed.
-    Neither command captures raw Bluetooth/AAP or identifies which AirPod was pressed.
+    'bluetooth-inspect' checks paired AirPods status without opening a channel.
+    'volume-step' changes the Mac's actual default output volume only on request.
+    None of these commands intercept live Bluetooth/AAP or identify which AirPod was pressed.
     """)
 }
 
@@ -78,6 +82,11 @@ case "simulate":
     } else { usage() }
 case "monitor": monitor()
 case "monitor-cg": monitorCoreGraphics()
+case "bluetooth-inspect": inspectAirPodsBluetooth()
+case "volume-step":
+    if args.count >= 2 {
+        adjustMacVolume(direction: args[1], steps: args.count > 2 ? (Int(args[2]) ?? 0) : 1)
+    } else { usage() }
 case "analyze":
     if args.count == 2 {
         do { try PklgAnalyzer.analyze(path: args[1]) }
