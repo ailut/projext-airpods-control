@@ -12,6 +12,7 @@ func usage() {
       swift run projext-diagnostic simulate right [seconds]
       swift run projext-diagnostic monitor
       swift run projext-diagnostic monitor-cg
+      swift run projext-diagnostic analyze <path-to-pklg>
 
     'simulate' prints signed volume steps (dry run; does NOT change volume).
     'monitor' watches macOS system-defined media-key events, if exposed.
@@ -77,5 +78,10 @@ case "simulate":
     } else { usage() }
 case "monitor": monitor()
 case "monitor-cg": monitorCoreGraphics()
+case "analyze":
+    if args.count == 2 {
+        do { try PklgAnalyzer.analyze(path: args[1]) }
+        catch { fputs("Analyze failed: \(error)\n", stderr); exit(1) }
+    } else { usage() }
 default: usage()
 }
