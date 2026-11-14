@@ -83,6 +83,21 @@ With both AirPods connected, try one single press, one double press and a hold. 
 
 If no events appear, check whether macOS requests Input Monitoring or Accessibility permission for the Terminal application, and retry after granting only what is necessary. **An empty log does not rule out proprietary Bluetooth events**; PacketLogger can receive traffic that an ordinary Swift program cannot.
 
+### Quartz event-tap experiment
+
+The AppKit `monitor` command produced no media-key logs in either VS Code's terminal or Terminal.app, despite working AirPods playback controls. A second, **read-only** Quartz/Core Graphics event-tap diagnostic is now included:
+
+```bash
+cd ~/Developer/projext-airpods-control
+git pull
+swift build
+swift run projext-diagnostic monitor-cg
+```
+
+If this is blocked, verify Input Monitoring and Accessibility permissions for the actual host app and relaunch it. While running, test a physical Mac media key, then AirPods single- and double-presses; press Ctrl+C to stop. Report whether the tap starts, whether the Mac key logs, and whether AirPods actions log. **This code has not been compiled on the user's Mac yet**; any compiler errors should be shared for correction.
+
+The tap deliberately returns the original event unchanged. Even successful events will report `side=UNKNOWN` because system-defined media-key events are not established as containing AirPods left/right origin. A silent monitor is not proof of absent Bluetooth data.
+
 ### Build verification
 
 The Swift Package and the three gesture-state unit tests were built/tested in a Linux Swift environment. **Native macOS AppKit monitor compilation and real AirPods integration remain unverified until run on a Mac.**
