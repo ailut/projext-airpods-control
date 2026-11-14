@@ -108,6 +108,26 @@ Compare whether `monitor` prints media-key events for the keyboard versus the Ai
 
 No raw Bluetooth files or personal device identifiers are needed in the repository.
 
+## Offline PacketLogger analyzer (Phase 3)
+
+The Swift diagnostic utility now has a **saved-capture** parser. It reads PacketLogger `.pklg` record headers and reports an *empirically observed* 184-byte incoming ACL candidate structure. This does **not** provide live AirPods event access or officially decoded Apple protocol fields.
+
+```bash
+cd ~/Developer/projext-airpods-control
+git pull
+swift test
+swift run projext-diagnostic analyze ~/path/to/left_hold_5sec.pklg
+swift run projext-diagnostic analyze ~/path/to/right_hold_5sec.pklg
+```
+
+Replace the paths with the actual local paths to your captures. Existing captures stay local, never in this repository. Analysis prints candidate timestamp relative to the first record, a **tentative** side, and two unassigned fields; it intentionally does not dump raw Bluetooth payloads or device addresses. The header parser and candidate matching include synthetic unit tests; Mac compilation should be verified with `swift test`.
+
+### Evidence snapshot (not raw captures)
+
+Across 20 physical single-, double-, and hold-press recordings supplied during the investigation, the selected 184-byte candidate pattern appeared once per capture, with the byte at candidate payload offset 26 equal to `02` for left and `01` for right. Three no-stem controls (baseline, keyboard track skip, Mac-triggered Siri) had no matches under the same signature. This is a **dataset correlation** only. It does not establish whether the bytes encode the actual pressing earbud, a downstream state change, a hold-start event or a release event.
+
+The next gates are to correlate the candidate timestamp with instrumented press/release times and to determine whether a permitted **live event source** is available to a normal macOS or iOS application. We must not equate visibility in a diagnostic .pklg file with accessibility through a public app API.
+
 ## Research references
 
 - [AirPods BLE battery research](https://github.com/stuffz/airpods/blob/main/docs/ble-research.md)
