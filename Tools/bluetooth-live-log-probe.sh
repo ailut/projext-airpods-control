@@ -50,7 +50,11 @@ summarize() {
   local total relevant
   total=$((stop - start))
   if [[ "$total" -lt 0 ]]; then total=0; fi
-  relevant="$(sed -n "$((start + 1)),$((stop))p" "$logfile" | grep -Eic 'aap|stem|press|gesture|button|avrcp|l2cap|hid|airpods' || true)"
+  if [[ "$total" -eq 0 ]]; then
+    relevant=0
+  else
+    relevant="$(sed -n "$((start + 1)),$((stop))p" "$logfile" | grep -Eic 'aap|stem|press|gesture|button|avrcp|l2cap|hid|airpods' || true)"
+  fi
   echo "RESULT phase=$phase total_bluetoothd_lines=$total keyword_lines=$relevant"
 }
 run_phase() {
