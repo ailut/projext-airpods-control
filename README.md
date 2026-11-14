@@ -128,6 +128,10 @@ Across 20 physical single-, double-, and hold-press recordings supplied during t
 
 The next gates are to correlate the candidate timestamp with instrumented press/release times and to determine whether a permitted **live event source** is available to a normal macOS or iOS application. We must not equate visibility in a diagnostic .pklg file with accessibility through a public app API.
 
+### PacketLogger elapsed-time correction
+
+Some exported captures prepend old diagnostic metadata (record type `0xFC`) before current Bluetooth traffic. The analyzer now measures relative time from the first HCI record of types `0`–`3`, rather than the first saved record. Earlier anomalous `+970000s` offsets were a **timestamp baseline bug**, not extended stem holds. The correction does not alter packet classification and still does not provide live access or validated gesture semantics.
+
 ## Research references
 
 - [AirPods BLE battery research](https://github.com/stuffz/airpods/blob/main/docs/ble-research.md)
