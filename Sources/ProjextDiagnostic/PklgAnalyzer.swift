@@ -73,7 +73,9 @@ enum PklgAnalyzer {
     static func analyze(path: String) throws {
         let bytes = Array(try Data(contentsOf: URL(fileURLWithPath: path)))
         let records = try PklgReader.decode(bytes)
-        let start = records.first?.timestamp ?? 0
+        // PacketLogger may prepend stale metadata records (e.g. type 0xFC).
+        // Anchor elapsed time to the first actual HCI command/event/ACL record.
+        let start = records.first(where: { [0, 1, 2, 3].contains(Int($0.kind)) })?.timestamp ?? records.first?.timestamp ?? 0
         let hits = records.compactMap(CandidatePacket.detect)
         print("File: \(URL(fileURLWithPath: path).lastPathComponent)")
         print("Records: \(records.count), candidate packets: \(hits.count)")
