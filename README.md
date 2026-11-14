@@ -57,6 +57,29 @@ Detailed procedures, preliminary findings, uncertainties and milestone gates: [R
 - Build the SwiftUI experience only after the iPhone feasibility gates pass, or document a Mac-only fallback.
 
 
+## macOS-first validation (current)
+
+The offline classifier matched 21 of 21 recorded physical gestures and 0 of 4 no-stem controls. Six Swift tests passed on the user's Mac. These results are **correlational**; there is no verified hold-start or hold-release notification, and neither AppKit nor a Quartz event tap saw AirPods stem presses (Quartz did receive Mac physical media keys).
+
+Public macOS Bluetooth interfaces can report paired/connected device status and can open some Bluetooth channels, but do not provide a supported global stream of raw HCI traffic from an existing system-owned AirPods connection. Independent macOS AAP reverse-engineering reports that another L2CAP/AAP connection is refused by macOS when AirPods are already connected; an opportunistic connection during initial pairing/reconnection can disrupt audio and is **not** part of our normal probe. See [airpods-ctl's investigation](https://github.com/BorgoGustavo/airpods-ctl/blob/master/docs/aap-protocol-notes.md) (AirPods Pro 2; do not assume all conclusions apply unchanged to AirPods 3).
+
+Two additional Mac commands have been committed for controlled capability testing:
+
+```bash
+cd ~/Developer/projext-airpods-control
+git pull
+swift test
+swift run projext-diagnostic bluetooth-inspect
+swift run projext-diagnostic volume-step down 1
+swift run projext-diagnostic volume-step up 1
+```
+
+- `bluetooth-inspect` is **passive**: reports the name, paired/connected state and number of cached SDP services for devices whose names contain AirPods. It doesn't print MAC addresses, open connections or read gestures.
+- `volume-step` changes **actual default macOS output volume** by 5 percentage points per step through the system's AppleScript volume command. Only run it when you want an audible change. This is a separate output actuator test; it is **not triggered by stem input**.
+- These commands are new code and have **not yet been compiled on the user's Mac**. Share compiler or permission errors for correction.
+
+Our remaining macOS feasibility gate is a stable, permitted way to access actual left/right stem **start and stop** events while the AirPods remain connected and playing audio. We will not claim success from offline signatures or force a second Bluetooth channel merely to demonstrate activity.
+
 ## Phase 3 prototype — Swift diagnostic utility
 
 The repository now contains a Swift Package with a small transport-independent gesture engine, unit tests, and a **macOS media-event monitor**. This is a feasibility prototype, **not** an AirPods Bluetooth parser or finished volume-control app.
